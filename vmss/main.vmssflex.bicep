@@ -3,7 +3,7 @@ param adminUsername string = 'azureuser'
 @secure()
 param adminPassword string
 
-param location string = 'northeurope'
+param location string = 'eastus2euap'
 
 resource vnet 'Microsoft.Network/virtualNetworks@2018-10-01' = {
   name: 'vmss-vnet'
@@ -32,23 +32,26 @@ resource vnet 'Microsoft.Network/virtualNetworks@2018-10-01' = {
 }
 
 resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-04-01' = {
-  name: 'vmss'
+  name: 'vmssflex-regional'
   location: location
   sku: {
     capacity: 3
-    name: 'Standard_D4d_v4'
+    name: 'Standard_D2s_v3'
   }
-  zones: [
-    '1'
-    '2'
-    '3'
-  ]
+  // zones: [
+  //   '1'
+  //   '2'
+  //   '3'
+  // ]
   properties: {
-    overprovision: true
-    zoneBalance: true
-    upgradePolicy: {
-      mode: 'Manual'
-    }
+    //overprovision: true
+    //zoneBalance: true
+    // upgradePolicy: {
+    //   mode: 'Manual'
+    // }
+    singlePlacementGroup:false
+    platformFaultDomainCount: 1
+    orchestrationMode: 'Flexible'
     virtualMachineProfile: {
       storageProfile: {
         osDisk: {
@@ -72,6 +75,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-04-01' = {
         adminPassword: adminPassword
       }
       networkProfile: {
+        networkApiVersion: '2020-11-01'
         networkInterfaceConfigurations: [
           {
             name: 'nic'
@@ -91,6 +95,11 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-04-01' = {
                         name: 'Standard'
                         tier: 'Regional'
                       }
+                      zones: [
+                        '1'
+                        '2'
+                        '3'
+                      ]
                       properties: {
                         publicIPAddressVersion:'IPv4'
                         idleTimeoutInMinutes: 15
